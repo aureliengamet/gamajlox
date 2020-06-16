@@ -1,9 +1,6 @@
 package com.gama.interpreter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Interpreter interpreter;
@@ -29,7 +26,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     private enum FunctionType {
-        NONE, FUNCTION, INITIALIZER, METHOD;
+        NONE, FUNCTION, INITIALIZER, METHOD, STATIC_METHOD;
     }
 
     private enum ClassType {
@@ -128,8 +125,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitThisExpr(Expr.This expr) {
-        if (currentClass == ClassType.NONE) {
-            Gamajlox.error(expr.keyword, "Cannot use this outside of classes.");
+        if (!Arrays.asList(FunctionType.METHOD, FunctionType.INITIALIZER).contains(currentFunction)) {
+            Gamajlox.error(expr.keyword, "Can only use 'this' in instance methods.");
             return null;
         }
         resolveLocal(expr, expr.keyword);
@@ -187,6 +184,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         for (Stmt.Function method : stmt.methods) {
             FunctionType functionType = "init".equals(method.name.lexeme) ? FunctionType.INITIALIZER : FunctionType.METHOD;
             resolveFunction(method.params, method.body, functionType);
+        }
+        for (Stmt.Function staticMethod : stmt.staticMethods) {
+            resolveFunction(staticMethod.params, staticMethod.body, FunctionType.STATIC_METHOD);
         }
         currentClass = enclosing;
         return null;
