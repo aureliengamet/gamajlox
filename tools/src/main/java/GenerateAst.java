@@ -1,5 +1,3 @@
-package com.gama.tools;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -8,11 +6,31 @@ import java.util.List;
 public class GenerateAst {
     public static void main(String[] args) throws IOException {
         defineAst("src/main/java/com/gama/interpreter", "Expr", Arrays.asList(
+                "Assign   : Token name, Expr value",
                 "Binary   : Expr left, Token operator, Expr right",
+                "Call     : Expr callee, Token paren, List<Expr> arguments",
+                "Get      : Expr object, Token name",
                 "Grouping : Expr expression",
                 "Literal  : Object value",
+                "Logical  : Expr left, Token operator, Expr right",
+                "Set      : Expr object, Token name, Expr value",
+                "This     : Token keyword",
                 "Unary    : Token operator, Expr right",
-                "Ternary    : Expr condition, Expr left, Expr right"
+                "Ternary  : Expr condition, Expr left, Expr right",
+                "Variable : Token name",
+                "AnonFunction : List<Token> params, List<Stmt> body"
+        ));
+        defineAst("src/main/java/com/gama/interpreter", "Stmt", Arrays.asList(
+                "Block      : List<Stmt> statements",
+                "Class      : Token name, List<Stmt.Function> methods",
+                "Expression : Expr expression",
+                "Function   : Token name, List<Token> params, List<Stmt> body",
+                "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+                "Print      : Expr expression",
+                "Return     : Token keyword, Expr value",
+                "Var        : Token name, Expr initializer",
+                "While      : Expr condition, Stmt body",
+                "Break      : Token breakToken"
         ));
     }
 
