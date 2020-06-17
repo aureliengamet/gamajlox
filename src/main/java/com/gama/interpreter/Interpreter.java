@@ -89,13 +89,18 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             LoxFunction function = new LoxFunction(method, "init".equals(method.name.lexeme), environment);
             methods.put(method.name.lexeme, function);
         }
+        Map<String, LoxFunction> getters = new HashMap<>();
+        for (Stmt.Function getter : stmt.getters) {
+            LoxFunction function = new LoxFunction(getter, false, environment);
+            getters.put(getter.name.lexeme, function);
+        }
         Map<String, LoxFunction> staticMethods = new HashMap<>();
         for (Stmt.Function staticMethod : stmt.staticMethods) {
             LoxFunction function = new LoxFunction(staticMethod, false, environment);
             staticMethods.put(staticMethod.name.lexeme, function);
         }
 
-        LoxRegularClass loxRegularClass = new LoxRegularClass(stmt.name.lexeme, methods, staticMethods);
+        LoxRegularClass loxRegularClass = new LoxRegularClass(stmt.name.lexeme, methods, getters, staticMethods);
         environment.assign(stmt.name, loxRegularClass);
         return null;
     }
@@ -232,7 +237,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Object visitGetExpr(Expr.Get expr) {
         Object obj = evaluate(expr.object);
         if (obj instanceof LoxInstance) {
-            return ((LoxInstance) obj).get(expr.name);
+            return ((LoxInstance) obj).get(expr.name, this);
         }
         throw new RuntimeError(expr.name, "Tried to access a property of something other than an instance.");
     }

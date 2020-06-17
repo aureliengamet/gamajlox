@@ -6,16 +6,21 @@ import java.util.Map;
 public class LoxRegularClass extends LoxInstance implements LoxCallable, LoxClass {
     public final String name;
     private final Map<String, LoxFunction> methods;
+    private final Map<String, LoxFunction> getters;
 
-    public LoxRegularClass(String name, Map<String, LoxFunction> methods, Map<String, LoxFunction> staticMethods) {
+    public LoxRegularClass(String name,
+                           Map<String, LoxFunction> methods,
+                           Map<String, LoxFunction> getters,
+                           Map<String, LoxFunction> staticMethods) {
         super(new LoxMetaClass(name, staticMethods));
         this.name = name;
+        this.getters = getters;
         this.methods = methods;
     }
 
     @Override
     public String toString() {
-        return name;
+        return "<class " + name + ">";
     }
 
     @Override
@@ -39,5 +44,10 @@ public class LoxRegularClass extends LoxInstance implements LoxCallable, LoxClas
     @Override
     public LoxFunction findMethod(String name) {
         return methods.get(name);
+    }
+
+    @Override
+    public LoxFunction findGetter(String name) {
+        return getters.get(name);
     }
 }

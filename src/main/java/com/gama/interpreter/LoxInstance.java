@@ -1,5 +1,6 @@
 package com.gama.interpreter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,12 +14,16 @@ public class LoxInstance {
 
     @Override
     public String toString() {
-        return loxClass + " instance";
+        return "<" + loxClass + " instance" + ">";
     }
 
-    public Object get(Token name) {
+    public Object get(Token name, Interpreter interpreter) {
         if (fields.containsKey(name.lexeme)) {
             return fields.get(name.lexeme);
+        }
+        LoxFunction getter = loxClass.findGetter(name.lexeme);
+        if (getter != null) {
+            return getter.bind(this).call(interpreter, Collections.emptyList());
         }
         LoxFunction method = loxClass.findMethod(name.lexeme);
         if (method != null) {

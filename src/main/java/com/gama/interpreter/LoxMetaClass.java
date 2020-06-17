@@ -13,11 +13,16 @@ public class LoxMetaClass implements LoxClass {
 
     @Override
     public String toString() {
-        return "metaclass " + name;
+        return "<metaclass " + name + ">";
     }
 
     @Override
     public LoxFunction findMethod(String name) {
         return methods.get(name);
+    }
+
+    @Override
+    public LoxFunction findGetter(String name) {
+        return null;
     }
 }

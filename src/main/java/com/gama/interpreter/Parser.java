@@ -62,17 +62,24 @@ public class Parser {
         consume(LEFT_BRACE, "Expected '{' before class body.");
 
         List<Stmt.Function> methods = new ArrayList<>();
+        List<Stmt.Function> getters = new ArrayList<>();
         List<Stmt.Function> staticMethods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
             if (match(CLASS)) {
                 staticMethods.add(function("static method"));
             } else {
-                methods.add(function("method"));
+                if (peek().type == IDENTIFIER && peekNext().type == LEFT_BRACE) {
+                    Token getterName = advance();
+                    List<Stmt> getterBody = getFunctionBody("getter");
+                    getters.add(new Stmt.Function(getterName, Collections.emptyList(), getterBody));
+                } else {
+                    methods.add(function("method"));
+                }
             }
         }
 
         consume(RIGHT_BRACE, "Expected '}' after class body.");
-        return new Stmt.Class(name, methods, staticMethods);
+        return new Stmt.Class(name, methods, getters, staticMethods);
     }
 
     private Stmt funDeclaration(String kind) {

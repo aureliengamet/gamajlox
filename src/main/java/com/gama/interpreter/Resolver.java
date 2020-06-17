@@ -12,7 +12,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private static class VarInfo {
         public final Token token;
         public final boolean initialized;
-        public final boolean used;
+        public boolean used;
 
         public VarInfo(Token token, boolean initialized) {
             this(token, initialized, false);
@@ -22,6 +22,10 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             this.token = token;
             this.initialized = initialized;
             this.used = used;
+        }
+
+        public void setUsed() {
+            this.used = true;
         }
     }
 
@@ -52,6 +56,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private void resolveLocal(Expr expr, Token name) {
         for (int i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name.lexeme)) {
+                scopes.get(i).get(name.lexeme).setUsed();
                 interpreter.resolve(expr, scopes.size() - 1 - i);
                 return;
             }
@@ -185,9 +190,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             FunctionType functionType = "init".equals(method.name.lexeme) ? FunctionType.INITIALIZER : FunctionType.METHOD;
             resolveFunction(method.params, method.body, functionType);
         }
+        for (Stmt.Function getter : stmt.getters) {
+            resolveFunction(getter.params, getter.body, FunctionType.METHOD);
+        }
         for (Stmt.Function staticMethod : stmt.staticMethods) {
             resolveFunction(staticMethod.params, staticMethod.body, FunctionType.STATIC_METHOD);
         }
+        endScope();
         currentClass = enclosing;
         return null;
     }
